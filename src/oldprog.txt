@@ -1,0 +1,75 @@
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.TreeMap;
+
+public class LongtCompoundWord {
+    public static void main(String[] args) {
+        getResultOfConcatinating("words1.txt");
+    }
+
+    public static ArrayList findAllConcatenatedWords(List<String> words) {
+
+        ArrayList dictionary = new ArrayList<String>();
+        TreeMap wordsInTree = new TreeMap<String, Integer>(Comparator.comparingInt(String::length));
+        for (int i = 0; i < words.size(); i++) {
+            wordsInTree.put(words.get(i), i);
+            dictionary.add(words.get(i));
+        }
+        return findLongestConcatenatedWord(wordsInTree, dictionary);
+    }
+
+
+
+    public static boolean isConcatenated(String word, ArrayList<String> dictionary) {
+        if (dictionary.contains(word))
+            return true;
+        for (int i = 1; i < word.length(); i++) {
+            String part = word.substring(0, i);
+            if (isConcatenated(part, dictionary)) {
+                String tail = word.substring(i, word.length());
+                if (tail.length() == 0)
+                    return true;
+                return isConcatenated(tail, dictionary);
+            }
+        }
+        return false;
+    }
+
+    public static ArrayList findLongestConcatenatedWord(TreeMap<String, Integer> wordsInTree, ArrayList<String> dictionary) {
+        ArrayList concatenatedWords = new ArrayList<String>();
+        while (wordsInTree.size() > 0) {
+            String word = wordsInTree.lastKey();
+            wordsInTree.remove(word);
+            dictionary.remove(word);
+            if (isConcatenated(word, dictionary))
+
+                concatenatedWords.add(word);
+        }
+        return concatenatedWords;
+    }
+
+    public static List getWordsFromSource(String source) {
+        List<String> lines = null;
+        try {
+            lines = Files.readAllLines(Paths.get(source), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return lines;
+    }
+
+    public static void getResultOfConcatinating(String source) {
+        ArrayList<String> finallyConcatenated = findAllConcatenatedWords(getWordsFromSource(source));
+        System.out.println(finallyConcatenated);
+        System.out.println("The longest concatenated word: " + finallyConcatenated.get(0));
+        System.out.println("The second longest concatenated word: " + finallyConcatenated.get(1));
+        System.out.println("The total count of concatenated words in the file: " + finallyConcatenated.size());
+
+    }
+}
